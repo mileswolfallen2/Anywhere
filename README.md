@@ -1,5 +1,9 @@
 # Anywhere
 
+<p align="center">
+  <img src="./logo.png" alt="Anywhere logo" width="200" />
+</p>
+
 Apple's continuity features — Universal Clipboard, Handoff, file sharing — but cross-platform, open, and privacy-first. Start on one device, pick up on another, without being locked into Apple's ecosystem.
 
 ## How it works
