@@ -1,0 +1,13 @@
+{
+  "name": "@anywhere/extension",
+  "version": "0.1.0",
+  "description": "Anywhere browser extension — continuity across browsers",
+  "scripts": {
+    "build": "node scripts/build.mjs"
+  },
+  "devDependencies": {
+    "@anywhere/shared": "file:../shared",
+    "esbuild": "^0.23.0",
+    "typescript": "^5.5.0"
+  }
+}

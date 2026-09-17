@@ -1,50 +1,85 @@
 # Anywhere
 
-Apple's continuity features — but for everything, everywhere. The same seamless "start on one device, pick up on another" flow from the Apple ecosystem, without being locked into Apple hardware.
+Apple's continuity features — Universal Clipboard, Handoff, file sharing — but cross-platform, open, and privacy-first. Start on one device, pick up on another, without being locked into Apple's ecosystem.
 
-## What is Anywhere?
+## How it works
 
-Anywhere brings the spirit of [Apple Continuity](https://www.apple.com/icloud/) to every operating system and every device. It lets your clipboard, your files, and your work in progress move between machines as if they were one computer.
+Anywhere is a small set of pieces that together make device boundaries disappear:
 
-Whether it's copy on your phone, paste on your laptop, or sending a file from your desktop straight to your tablet — Anywhere makes device boundaries disappear.
+| Piece | What it is | Tech |
+|-------|------------|------|
+| **Relay server** | The always-on mailbox. Devices sync clipboard and handoff data through it (over WebSockets), so copy on your phone can be pasted on your desktop even on different networks. Runs in a Docker container — on a Raspberry Pi, a home NAS, or a VPS you own. | TypeScript, Node.js, `ws` |
+| **Native app** | The desktop frontend: a clipboard console and the installer that detects your browsers and installs the extension on the one you pick. Runs on native webviews (WKWebView / WebView2 / WebKitGTK), not Chromium. | [Gelectron](https://github.com/mileswolfallen2/gelectron) (Electron-compatible API) |
+| **Browser extension** | Adds continuity copy/paste to Chrome and Firefox. One TypeScript source builds both versions. | TypeScript, Manifest V3 |
+| **Shared protocol** | The message types every piece speaks — `push`, `get`, `pair`, `clipboard` — defined once, shared everywhere. | TypeScript types |
 
-## Philosophy
+```
+┌─────────────┐                  ┌──────────────┐                  ┌─────────────┐
+│  Extension  │  ──WebSocket──▶ │  Relay server │  ──WebSocket──▶ │  Extension  │
+│  (Chrome)   │                 (Docker/server) │                  │  (Firefox)  │
+│  extension  │                  │              │                  │  extension  │
+└─────────────┘                  └──────────────┘                  └─────────────┘
+        ▲                              │                                    ▲
+        └──────────────────────────────┴────────────────────────────────────┘
+                               clipboard is "last write wins":
+                    push once, every connected device gets it
+```
 
-- **Open and cross-platform** — Works across macOS, Windows, Linux, iOS, and Android. No vendor lock-in.
-- **Privacy-first** — Devices talk to each other directly. Your data doesn't need to live on someone else's server.
-- **Zero-friction** — Continuity is invisible. Anywhere should be too. No accounts, no setup rituals, just devices that recognize each other.
+## Repository layout
 
-## Platform support
+```
+shared/              Shared protocol types (imported by everything)
+server/              Relay server — TypeScript + Node.js, ships as a Docker image
+  Dockerfile         Multi-stage image: builds TS, runtime has zero dev deps
+  docker-compose.yml Deploy target for a Raspberry Pi
+extensions/anywhere  One TS source → dist/chrome + dist/firefox manifests
+app/                 Native Gelectron frontend + browser installer
+scripts/setup.sh     One command dev bootstrap (installs every package)
+Dockerfile           Server image for the Pi
+```
 
-| Platform | Support |
-|----------|---------|
-| macOS | Planned |
-| Windows | Planned |
-| Linux | Planned |
-| iOS | if i can find a way |
-| Android | Planned |
+## Running the relay on a Raspberry Pi
 
-## Planned features
+```sh
+# on the Pi, from this repo:
+docker compose up --build -d
+```
 
-- **Universal Clipboard** — Copy text, images, and files on one device; paste on any other within range.
-- **Handoff** — Start a task on one device and pick it up where you left off on another.
-- **Instant file transfer** — Push files between nearby devices in one tap, no cables or cloud uploads.
-- **Phone-as-continuity-camera** — Use your phone's camera as a webcam on your desktop.
-- **Tethering** — Turn your phone's connection into instant internet for your laptop.
-- **Nearby device discovery** — Devices on the same network (or Bluetooth range) find each other automatically and securely.
-- **Automatic handshake** — Pairing that feels like magic: secure, mutual, and trusted without typing codes.
+The relay listens on port `8777` (`http://<pi-address>:8777/health` to check it), persists clipboard state in a Docker volume, and restarts on boot (`restart: unless-stopped`).
 
-## Roadmap
+## Development
 
-- **Phase 1** — Device discovery and secure pairing between two devices.
-- **Phase 2** — Universal Clipboard across all supported platforms.
-- **Phase 3** — Instant file transfer and Handoff.
-- **Phase 4** — Continuity camera, tethering, and polish.
+One command installs every package — server, shared, extensions, and the Gelectron runtime (installed locally, no sudo):
+
+```sh
+./scripts/setup.sh
+```
+
+That runs `npm install` across all npm workspaces, builds each TypeScript package, and verifies the Gelectron runtime and extension bundles.
+
+Then:
+
+```sh
+npm run dev        # run the relay server locally (also used inside Docker)
+npm run start --workspace @anywhere/app   # launch the native app
+npm run build --workspace @anywhere/extension  # rebuild Chrome + Firefox bundles
+```
+
+To load the extension in a browser, use "Load unpacked" and point it at `extensions/anywhere/dist/chrome` or `extensions/anywhere/dist/firefox`. The native app will automate this.
+
+> Prerequisites: Node.js 18+, npm. No Rust toolchain needed — Gelectron's prebuilt native binary comes from npm.
 
 ## Status
 
-Early development. No functional code yet — the project skeleton, this README, and project direction are the current state.
+Early development. The skeleton — monorepo, relay server with clipboard mailbox, Docker image, Gelectron frontend shell, and the dual-build extension — is in place. The copy/paste feature wiring between extension → relay → extension is next.
+
+## Roadmap
+
+- **Phase 1 (current)** — Clipboard sync end to end: extension → relay → extension, plus the Gelectron installer choosing a browser.
+- **Phase 2** — Device pairing, E2E encryption (server becomes a dumb encrypted mailbox).
+- **Phase 3** — Handoff + instant file transfer.
+- **Phase 4** — Phone-as-camera, tethering, polish.
 
 ## License
 
-This project is currently under the custom terms in [LICENSE](LICENSE). The intent is to eventually release it under an **MIT license**. plz be patient, as I want this to be a good project
+Currently under the custom terms in [LICENSE](LICENSE). The intent is to eventually release under an **MIT license**.

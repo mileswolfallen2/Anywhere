@@ -1,0 +1,14 @@
+{
+  "name": "@anywhere/app",
+  "version": "0.1.0",
+  "description": "Anywhere native frontend + browser installer (runs on Gelectron)",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc && node scripts/copy-static.mjs",
+    "start": "gelectron-core ."
+  },
+  "devDependencies": {
+    "gelectron-core": "latest",
+    "typescript": "^5.5.0"
+  }
+}

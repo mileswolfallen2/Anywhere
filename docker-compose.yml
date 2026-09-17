@@ -1,0 +1,16 @@
+services:
+  anywhere:
+    build: .
+    image: anywhere/relay:latest
+    container_name: anywhere
+    restart: unless-stopped
+    ports:
+      - "8777:8777"
+    environment:
+      ANYWHERE_PORT: "8777"
+      DATA_DIR: "/data"
+    volumes:
+      - anywhere-data:/data
+
+volumes:
+  anywhere-data:

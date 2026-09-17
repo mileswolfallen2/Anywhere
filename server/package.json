@@ -1,0 +1,20 @@
+{
+  "name": "@anywhere/server",
+  "version": "0.1.0",
+  "description": "Anywhere relay server (encrypted mailbox / clipboard sync)",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch & node --watch dist/index.js"
+  },
+  "dependencies": {
+    "@anywhere/shared": "file:../shared",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/ws": "^8.5.12",
+    "typescript": "^5.5.0"
+  }
+}

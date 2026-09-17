@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "Anywhere",
+  "version": "0.1.0",
+  "description": "Apple's continuity, for everything everywhere — cross-platform copy/paste.",
+  "permissions": ["clipboardRead", "clipboardWrite", "storage"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Anywhere"
+  }
+}

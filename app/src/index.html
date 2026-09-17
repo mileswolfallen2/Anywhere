@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Anywhere</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { font-family: system-ui, sans-serif; margin: 2rem auto; max-width: 32rem; }
+      h1 { font-size: 1.4rem; }
+      .card { padding: 1rem; border: 1px solid #8884; border-radius: 8px; margin: 1rem 0; }
+      .row { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+      button { padding: 0.4rem 0.8rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Anywhere</h1>
+    <p>Apple's continuity, for everything everywhere. Native frontend.</p>
+
+    <div class="card">
+      <h2>Install the browser extension</h2>
+      <p>Choose a browser. The extension adds continuity (copy/paste) to that browser.</p>
+      <div class="row">
+        <button data-browser="chrome" disabled>Chrome / Edge</button>
+        <button data-browser="firefox" disabled>Firefox</button>
+      </div>
+      <p><em>Wiring to the relay server lands with the copy/paste feature.</em></p>
+    </div>
+  </body>
+</html>

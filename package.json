@@ -1,0 +1,17 @@
+{
+  "name": "anywhere",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Apple's continuity features, but cross-platform and open",
+  "workspaces": [
+    "shared",
+    "server",
+    "extensions/anywhere",
+    "app"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace @anywhere/shared && npm run build --workspace @anywhere/server && npm run build --workspace @anywhere/extension && npm run build --workspace @anywhere/app",
+    "dev": "npm run dev --workspace @anywhere/server",
+    "setup": "bash scripts/setup.sh"
+  }
+}

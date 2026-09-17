@@ -1,0 +1,15 @@
+{
+  "name": "@anywhere/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared protocol types and message schemas",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
