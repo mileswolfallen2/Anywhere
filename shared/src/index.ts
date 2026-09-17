@@ -9,13 +9,11 @@ export interface ClipboardPayload {
 
 export type ClientMessage =
   | { kind: 'push'; payload: ClipboardPayload }
-  | { kind: 'get'; since?: number }
-  | { kind: 'pair'; deviceId: string; displayName: string }
+  | { kind: 'get' }
   | { kind: 'ping' };
 
 export type ServerMessage =
   | { kind: 'pong' }
   | { kind: 'welcome'; serverVersion: string }
   | { kind: 'clipboard'; payload: ClipboardPayload | null }
-  | { kind: 'paired' }
   | { kind: 'error'; message: string };

@@ -11,6 +11,7 @@
   ],
   "scripts": {
     "build": "npm run build --workspace @anywhere/shared && npm run build --workspace @anywhere/server && npm run build --workspace @anywhere/extension && npm run build --workspace @anywhere/app",
+    "test": "npm run build && node scripts/e2e.mjs",
     "dev": "npm run dev --workspace @anywhere/server",
     "setup": "bash scripts/setup.sh"
   }

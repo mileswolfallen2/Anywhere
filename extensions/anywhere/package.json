@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Anywhere browser extension — continuity across browsers",
   "scripts": {
-    "build": "node scripts/build.mjs"
+    "build": "tsc --noEmit && node scripts/build.mjs"
   },
   "devDependencies": {
     "@anywhere/shared": "file:../shared",

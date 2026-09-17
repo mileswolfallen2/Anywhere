@@ -78,6 +78,9 @@ cat <<'EOF'
   Run the relay server locally:
       npm run dev
 
+  Run the full end-to-end check (builds everything, exercises relay):
+      npm test
+
   Run the relay in Docker (same image the Raspberry Pi runs):
       docker compose up --build
 

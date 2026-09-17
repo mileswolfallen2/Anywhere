@@ -2,39 +2,31 @@ import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
 import { WebSocketServer, WebSocket } from 'ws';
-import {
-  PROTOCOL_VERSION,
-  ClipboardPayload,
-  ClientMessage,
-  ServerMessage,
-} from '@anywhere/shared';
+import { PROTOCOL_VERSION, ClipboardPayload, ClientMessage, ServerMessage } from '@anywhere/shared';
 
 const PORT = Number(process.env.ANYWHERE_PORT ?? 8777);
 const DATA_DIR = process.env.DATA_DIR ?? path.join(__dirname, '..', 'data');
 const STATE_FILE = path.join(DATA_DIR, 'clipboard.json');
 
-fs.mkdirSync(DATA_DIR, { recursive: true });
+let latest: ClipboardPayload | null = load();
 
-let latest: ClipboardPayload | null = null;
-
-function loadState(): void {
+function load(): ClipboardPayload | null {
   try {
-    latest = JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8')) as ClipboardPayload;
+    return JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8')) as ClipboardPayload;
   } catch {
-    latest = null;
+    return null;
   }
 }
 
-function saveState(): void {
+function persist(): void {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(STATE_FILE, JSON.stringify(latest));
 }
-
-loadState();
 
 const server = http.createServer((req, res) => {
   if (req.url === '/health') {
     res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ ok: true, protocolVersion: PROTOCOL_VERSION, devices: wss.clients.size }));
+    res.end(JSON.stringify({ ok: true, protocolVersion: PROTOCOL_VERSION, clients: wss.clients.size }));
     return;
   }
   res.writeHead(404);
@@ -45,6 +37,12 @@ const wss = new WebSocketServer({ server });
 
 function send(ws: WebSocket, msg: ServerMessage): void {
   ws.send(JSON.stringify(msg));
+}
+
+function broadcast(msg: ServerMessage, except?: WebSocket): void {
+  for (const client of wss.clients) {
+    if (client !== except && client.readyState === WebSocket.OPEN) send(client, msg);
+  }
 }
 
 wss.on('connection', (ws) => {
@@ -64,23 +62,14 @@ wss.on('connection', (ws) => {
         send(ws, { kind: 'pong' });
         break;
 
-      case 'push': {
+      case 'push':
         latest = { ...msg.payload, ts: Date.now() };
-        saveState();
-        for (const client of wss.clients) {
-          if (client !== ws && client.readyState === WebSocket.OPEN) {
-            send(client, { kind: 'clipboard', payload: latest });
-          }
-        }
+        persist();
+        broadcast({ kind: 'clipboard', payload: latest }, ws);
         break;
-      }
 
       case 'get':
         send(ws, { kind: 'clipboard', payload: latest });
-        break;
-
-      case 'pair':
-        send(ws, { kind: 'paired' });
         break;
     }
   });
@@ -89,3 +78,11 @@ wss.on('connection', (ws) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`[anywhere] relay listening on http://0.0.0.0:${PORT}`);
 });
+
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.on(signal, () => {
+    for (const client of wss.clients) client.close();
+    wss.close();
+    server.close(() => process.exit(0));
+  });
+}

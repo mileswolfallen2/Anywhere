@@ -65,6 +65,7 @@ Then:
 
 ```sh
 npm run dev        # run the relay server locally (also used inside Docker)
+npm test           # full end-to-end check (builds everything + exercises the relay)
 npm run start --workspace @anywhere/app   # launch the native app
 npm run build --workspace @anywhere/extension  # rebuild Chrome + Firefox bundles
 ```
